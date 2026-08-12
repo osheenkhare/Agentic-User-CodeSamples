@@ -44,7 +44,11 @@ This will run the server locally on `http://localhost:3978`
 For testing, you'll need to expose the server to the internet so that Microsoft Teams can communicate with it. You can use any tunneling software, such as ngrok, for this purpose. This setup is only for testing and should not be used in production.
 - Install [ngrok](https://ngrok.com/) and create a free account 
 - Add your ngrok authentication token on your local machine. (available after creating your account), `ngrok config add-authtoken <token>`
-- run `ngrok http 3978` it will give an https endpoint (example: `https://domain.ngrok-free.dev`)
+- run `ngrok http 3978` it will give an https endpoint (example: `https://domain.ngrok-free.dev`), this means that your local server is now accessible from the internet at this endpoint.
+
+![ngrok](../diagrams/ngrok.png)
+
+
 
 
 ### Configure ngrok endpoint
