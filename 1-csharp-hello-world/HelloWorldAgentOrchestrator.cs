@@ -21,7 +21,7 @@ internal sealed class HelloWorldAgentOrchestrator : IAgentOrchestrator
         {
             // Add deliberate delay of 0.05 seconds to simulate streaming
             // Please remove this delay in production code as it is only for demonstration purposes
-            await Task.Delay(TimeSpan.FromSeconds(0.1), cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(0.05), cancellationToken);
 
             yield return new AgentEvent($"{word} ");
         }
