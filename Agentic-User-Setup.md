@@ -45,7 +45,7 @@ From this step, you should have the following values saved for later use:
 - Tenant Id `tenantId`
 
 
-## 2. Assign the SMBA Permission
+## 2. Assign the SMBA Permission to the Agent Blueprint
 
 The caller needs the `DelegatedPermissionGrant.ReadWrite.All` permission.
 
@@ -79,7 +79,30 @@ You should get `200 OK` response.
 
 Save the `object-id` returned for the new agent identity. this will be reffered to as `<agentIdentityObjectId>` in the next step.
 
-## 4. Create an Agentic User
+## 4. Assign the SMBA Permission to the Agent Identity
+
+The caller needs the `DelegatedPermissionGrant.ReadWrite.All` permission.
+
+In Microsoft Graph Explorer, submit the following request. Replace `<agentIdentityObjectId>` with the value saved in step 3; leave the other values unchanged.
+
+```http
+POST https://graph.microsoft.com/v1.0/oauth2PermissionGrants
+Content-Type: application/json
+```
+
+```json
+{
+  "clientId": "<agentIdentityObjectId>",
+  "consentType": "AllPrincipals",
+  "id": "8jJE7cV0qUGWNscC4cKioagfINH8oytAkUfEcUyZSTA",
+  "principalId": null,
+  "resourceId": "d1201fa8-a3fc-402b-9147-c4714c994930",
+  "scope": "AgentData.ReadWrite"
+}
+```
+
+
+## 5. Create an Agentic User
 
 The caller needs `AgentIdUser.ReadWrite.IdentityParentedBy` permission.
 
@@ -104,7 +127,7 @@ Content-Type: application/json
 Save the `id` returned for the new agentic userk, this will be reffered to as `<agenticUserId>` in the next step.
 
 
-## 5. Assign a Microsoft 365 E3 License
+## 6. Assign a Microsoft 365 E3 License
 
 The caller needs `LicenseAssignment.ReadWrite.All` permission.
 
@@ -129,17 +152,9 @@ Content-Type: application/json
 
 ## 7. Verify the Agentic User in Teams
 
-1. Open Microsoft Teams and locate the newly created agentic user.
+1. Open Microsoft Teams and locate the newly created agentic user. For the first time you may need to enter the full email e.g. `pheonix@dptest07.onmicrosoft.com`.
 2. Send a test message to the agentic user to verify the setup works.
 
 Note: For the message to actually reach your server and for your server to respond back, the server endpoint needs to be configured for this agent blueprint on the Developer Portal.
 
-This step will be done once a sample is up and running on local machine and is tunned to internet via ngrok (or any other tunnelling software)
-
-Goto `https://dev.teams.microsoft.com/tools/agent-blueprint/<id>`
-
-`<id>` is the agent app id in step 1
-
-In developer Portal > goto Configuration > Notification Configuration
-- Set `Agent Type` as `API Based`
-- Set `Notification Url` as the endpoint of your server, it would look like `domain.com/api/messages`
+This step will be done once a sample is up and running on local machine and is tunned to internet via ngrok (or any other tunnelling software). Follow the sample's readme to set up the sample and configure the endpoint in the developer portal.
