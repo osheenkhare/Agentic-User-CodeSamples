@@ -2,6 +2,12 @@
 
 Samples for showcasing agentic users in Microsoft Teams.
 
+## Samples
+
+- [1 - C# hello world](./1-csharp-hello-world/Readme.md)
+- [3 - C# Azure OpenAI](./3-csharp-azure-openai/Readme.md)
+- [4 - C# Teams SDK capabilities](./4-csharp-teams-sdk-capabilities/README.md)
+
 ## Setup guide
 
 There are 2 parts of the setup this sample
