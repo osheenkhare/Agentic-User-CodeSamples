@@ -8,7 +8,7 @@ Samples for showcasing agentic users for BNY's use case.
 
 ## High level architecture
 
-![High-level design](./diagrams/HDL.png)
+![High-level design](./diagrams/HLD.png)
 
 ## Setup guide
 
