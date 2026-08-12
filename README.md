@@ -1,23 +1,23 @@
-# Teams Streaming App for BNY
+# Agentic user samples for BNY
 
-Demo for showcasing agentic users for BNY's user case.
+Samples for showcasing agentic users for BNY's use case.
 
-## Demo
-- Shows an Agentic user created via Agent Identity
-- Simulated tool calling (Gitlab, Jira) via MCP servers
-- Supports Status updates and Chain of thought resoning updates while processing requests
-- Supports Streaming Responses 
-- Built with Teams SDK
+## Demo video
 
-![Demo](./Demo.gif?raw=true)
+![Demo](./diagrams/Demo.gif?raw=true)
 
-## High level architecture 
+## High level architecture
 
-![High-level design](./diagrams/HDL-sdkPassthru.png)
+![High-level design](./diagrams/HDL.png)
+
+## Setup guide
+
+There are 2 parts of the setup
+- Create an agentic user
+- Set up any of the demo (start with Hello World)
 
 
 ## Running locally
-
 
 1. Run the app:
 

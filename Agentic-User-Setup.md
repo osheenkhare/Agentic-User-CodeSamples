@@ -1,0 +1,145 @@
+# Agentic User Setup
+
+Follow these steps to create an agent blueprint and identity, provision an agentic user, and make the user available in Microsoft Teams.
+
+Please use this to test in a non-prod test environment.
+
+## What is an agentic user?
+An agentic user is the runtime identity that appears in your organization. Agentic users are a specialized subtype of user identity designed specifically for agents. Documentation can be found here: [Agent identity](https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#agent-user)
+
+An agentic user is backed by an agent identity, which is backed by an agent blueprint. The agent blueprint contains the endpoint where Teams messages (and other events) will be sent. One agent blueprint can be used to create multiple agent identities and agentic users.
+
+![agent-blueprint](./diagrams/agentBlueprint.png)
+
+## Prerequisites
+
+- Access to the [Microsoft Entra admin center](https://entra.microsoft.com/)
+- Access to the [Microsoft Teams Developer Portal](https://dev.teams.microsoft.com/)
+- Access to [Microsoft Graph Explorer](https://developer.microsoft.com/graph/graph-explorer)
+- Permissions to create agent identities, users, and OAuth permission grants
+- An available Microsoft 365 E3 (or Teams) license
+
+
+## 1. Create an Agent Blueprint
+
+1. Open [Agent Blueprints in the Microsoft Entra admin center](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/AllAgents.MenuView/~/overview).
+2. Create an agent blueprint.
+3. Save the following values for later:
+   - Agent Blueprint `appId`
+   - Agent Blueprint `principalObjectId`
+4. Create a client secret for authentication and store it securely.
+   - On the entra portal for the same Agent Blueprint, goto `Credentials` > `Client secrets` > `New client secret`, save the `value` securely, it will be used in the next step to configure the agent service.
+5. Open the blueprint in the Teams Developer Portal, replacing `{appId}` with the saved agent application ID:
+
+   ```text
+   https://dev.teams.microsoft.com/tools/agent-blueprint/{appId}
+   ```
+   Set the agent endpoint URL, this is the service on which the agent is hosted `{host}/api/messages`. (For this, refer to the sample's readme. You can use ngrok to expose your local service to the internet and set this later in the developer portal, in case you dont have the sample set up skip this for now and come back to it later).
+6. Note down your `tenantId`. (Tenant Id can be found here: [Entra Portal Tenant Id](https://entra.microsoft.com/#view/Microsoft_AAD_IAM/TenantOverview.ReactView))
+
+
+From this step, you should have the following values saved for later use:
+- Agent Blueprint `appId`
+- Agent Blueprint `principalObjectId`
+- Agent Blueprint `clientSecret`
+- Tenant Id `tenantId`
+
+
+## 2. Assign the SMBA Permission
+
+The caller needs the `DelegatedPermissionGrant.ReadWrite.All` permission.
+
+In Microsoft Graph Explorer, submit the following request. Replace `<principalObjectId>` with the value saved in step 1; leave the other values unchanged.
+
+```http
+POST https://graph.microsoft.com/v1.0/oauth2PermissionGrants
+Content-Type: application/json
+```
+
+```json
+{
+  "clientId": "<principalObjectId>",
+  "consentType": "AllPrincipals",
+  "id": "8jJE7cV0qUGWNscC4cKioagfINH8oytAkUfEcUyZSTA",
+  "principalId": null,
+  "resourceId": "d1201fa8-a3fc-402b-9147-c4714c994930",
+  "scope": "AgentData.ReadWrite"
+}
+```
+
+You should get `200 OK` response.
+
+## 3. Create an Agent Identity
+
+### Option A: Microsoft Entra Admin Center
+
+1. Open [Agent Identities in the Microsoft Entra admin center](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/AllAgents.MenuView/~/allAgentIds).
+2. Create an agent identity.
+3. Select the agent blueprint from step 1
+
+Save the `object-id` returned for the new agent identity. this will be reffered to as `<agentIdentityObjectId>` in the next step.
+
+## 4. Create an Agentic User
+
+The caller needs `AgentIdUser.ReadWrite.IdentityParentedBy` permission.
+
+In Microsoft Graph Explorer, submit the following request. Replace the example values as needed and set `agentIdentityObjectId` to the agent identity object ID saved in step 3.
+
+```http
+POST https://graph.microsoft.com/beta/users/microsoft.graph.agentUser
+Content-Type: application/json
+```
+
+```json
+{
+  "accountEnabled": true,
+  "displayName": "Pheonix",
+  "mailNickname": "Pheonix",
+  "userPrincipalName": "Pheonix@dptest07.onmicrosoft.com",
+  "identityParentId": "<agentIdentityObjectId>",
+  "usageLocation": "US"
+}
+```
+
+Save the `id` returned for the new agentic userk, this will be reffered to as `<agenticUserId>` in the next step.
+
+
+## 5. Assign a Microsoft 365 E3 License
+
+The caller needs `LicenseAssignment.ReadWrite.All` permission.
+
+Replace `{agenticUserId}` with the agentic user ID saved in step 4. The following payload uses the Microsoft 365 E3 SKU and should otherwise remain unchanged.
+
+```http
+POST https://graph.microsoft.com/v1.0/users/{agenticUserId}/assignLicense
+Content-Type: application/json
+```
+
+```json
+{
+  "addLicenses": [
+    {
+      "skuId": "6fd2c87f-b296-42f0-b197-1e91e994b900",
+      "disabledPlans": []
+    }
+  ],
+  "removeLicenses": []
+}
+```
+
+## 7. Verify the Agentic User in Teams
+
+1. Open Microsoft Teams and locate the newly created agentic user.
+2. Send a test message to the agentic user to verify the setup works.
+
+Note: For the message to actually reach your server and for your server to respond back, the server endpoint needs to be configured for this agent blueprint on the Developer Portal.
+
+This step will be done once a sample is up and running on local machine and is tunned to internet via ngrok (or any other tunnelling software)
+
+Goto `https://dev.teams.microsoft.com/tools/agent-blueprint/<id>`
+
+`<id>` is the agent app id in step 1
+
+In developer Portal > goto Configuration > Notification Configuration
+- Set `Agent Type` as `API Based`
+- Set `Notification Url` as the endpoint of your server, it would look like `domain.com/api/messages`
