@@ -2,6 +2,10 @@
 
 This sample demonstrates a basic C# "Hello World" application that serves as an introductory guide for developers getting started with the Agent Identity framework. It illustrates fundamental concepts including project setup, basic syntax, and executing a simple console application. The example walks through creating a minimal console program that outputs a greeting message, providing a foundation for understanding how to structure C# projects within the Agent Identity ecosystem.
 
+## Prerequisites
+
+Complete the [Agentic User Setup](../Agentic-User-Setup.md).
+
 ## Setup `appsettings.json`
 
 Goto `appsettings.json`, leave the other values as is and configure the following:
