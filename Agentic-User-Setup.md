@@ -28,7 +28,7 @@ An agentic user is backed by an agent identity, which is backed by an agent blue
 4. Create a client secret for authentication and store it securely.
    - On the same Agent Blueprint details page, goto `Credentials` > `Client secrets` > `New client secret`, generate a secret and save the `value` securely, it will be used in the next step to configure the agent service.
    - Make sure to use `Client secrets` for `Credentials` and **NOT** `Federated Credentials` for these samples
-5. Open the blueprint in the Teams Developer Portal, replacing `{appId}` with the saved agent application ID:
+5. [Skip this step if the sample code is not set up] Open the blueprint in the Teams Developer Portal, replacing `{appId}` with the saved agent application ID:
 
    ```text
    https://dev.teams.microsoft.com/tools/agent-blueprint/{appId}
