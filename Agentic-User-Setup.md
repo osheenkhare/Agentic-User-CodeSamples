@@ -3,7 +3,7 @@
 Follow these steps to create an agent blueprint and identity, provision an agentic user, and make the user available in Microsoft Teams.
 
 ## What is an agentic user?
-An agentic user is the runtime identity that appears in your organization. Agentic users are a specialized subtype of user identity designed specifically for agents. Documentation can be found here: [Agent identity](https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#agent-user)
+An agentic user is the runtime identity that appears in your organization. Agentic users are a specialized subtype of user identity designed specifically for agents. Documentation can be found here: [Agentic User](https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#agent-user) and [Agent Identity](https://learn.microsoft.com/en-us/entra/agent-id/agent-identities)
 
 An agentic user is backed by an agent identity, which is backed by an agent blueprint. The agent blueprint contains the endpoint where Teams messages (and other events) will be sent. One agent blueprint can be used to create multiple agent identities and agentic users.
 
