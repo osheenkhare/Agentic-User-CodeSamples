@@ -128,14 +128,14 @@ Content-Type: application/json
 }
 ```
 
-Save the `id` returned for the new agentic userk, this will be reffered to as `<agenticUserId>` in the next step.
+Save the `id` returned for the new agentic user, this will be reffered to as `<agenticUserId>` in the next step.
 
 
-## 6. Assign a Microsoft 365 E3 License
+## 7. Assign a Microsoft 365 E3 License
 
 The caller needs `LicenseAssignment.ReadWrite.All` permission.
 
-Replace `{agenticUserId}` with the agentic user ID saved in step 4. The following payload uses the Microsoft 365 E3 SKU and should otherwise remain unchanged.
+Replace `{agenticUserId}` with the agentic user ID saved in step 6. The following payload uses the Microsoft 365 E3 SKU and should otherwise remain unchanged.
 
 ```http
 POST https://graph.microsoft.com/v1.0/users/{agenticUserId}/assignLicense
