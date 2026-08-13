@@ -110,7 +110,7 @@ This should give `201 Success`, we dont have to save anything from the response 
 
 The caller needs `AgentIdUser.ReadWrite.IdentityParentedBy` permission.
 
-In Microsoft Graph Explorer, submit the following request. Replace the example values as needed and set `agentIdentityObjectId` to the agent identity object ID saved in step 3.
+In Microsoft Graph Explorer, submit the following request. Replace the example values as needed and set `agentIdentityObjectId` to the agent identity object ID saved in step 4.
 
 ```http
 POST https://graph.microsoft.com/beta/users/microsoft.graph.agentUser
