@@ -74,7 +74,7 @@ Content-Type: application/json
 }
 ```
 
-This should give `200 OK`, we dont have to save anything from the response here.
+This should give `201 Success`, we dont have to save anything from the response here.
 
 ## 4. Create an Agent Identity
 
@@ -104,7 +104,7 @@ Content-Type: application/json
   "scope": "AgentData.ReadWrite"
 }
 ```
-This should give `200 OK`, we dont have to save anything from the response here.
+This should give `201 Success`, we dont have to save anything from the response here.
 
 ## 6. Create an Agentic User
 
