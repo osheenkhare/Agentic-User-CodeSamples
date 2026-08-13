@@ -112,6 +112,8 @@ The caller needs `AgentIdUser.ReadWrite.All` permission.
 
 In Microsoft Graph Explorer, submit the following request. Replace the example values as needed and set `agentIdentityObjectId` to the agent identity object ID saved in step 4.
 
+Set the values `displayName` `mailNickname` `userPrincipalName` according to your requirements.
+
 ```http
 POST https://graph.microsoft.com/beta/users/microsoft.graph.agentUser
 Content-Type: application/json
