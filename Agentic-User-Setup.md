@@ -43,27 +43,7 @@ From this step, you should have the following values saved for later use:
 - Agent Blueprint `clientSecret`
 - Tenant Id `tenantId`
 
-## 2. Set inheritable permission for agent blueprint
-The caller needs `AgentIdentityBlueprint.ReadWrite.All` permission.
-
-In Microsoft Graph Explorer, submit the following request with the agent blueprint `<appId>` saved in step 1.
-
-```http
-POST https://graph.microsoft.com/v1.0/applications/{appId}/microsoft.graph.agentIdentityBlueprint/inheritablePermissions
-```
-
-```json
-{
-  "resourceAppId": "00000003-0000-0000-c000-000000000000",
-  "inheritableScopes": {
-    "@odata.type": "microsoft.graph.allAllowedScopes"
-  }
-}
-```
-
-This should give `200 OK`, we dont have to save anything from the response here.
-
-## 3. Get the SMBA resource id
+## 2. Get the SMBA resource id
 
 The caller needs the `Application.Read.All` permission.
 
@@ -74,11 +54,11 @@ GET https://graph.microsoft.com/v1.0/servicePrincipals(appId='5a807f24-c9de-44ee
 ```
 This should return the `id` for Messaging Bot API Application, save this id, this will be referred as `smbaResourceId` and will be used later.
 
-## 4. Assign the SMBA Permission to the Agent Blueprint
+## 3. Assign the SMBA Permission to the Agent Blueprint
 
 The caller needs the `DelegatedPermissionGrant.ReadWrite.All` permission.
 
-In Microsoft Graph Explorer, submit the following request. Replace `<principalObjectId>` with the value saved in step 1 and the `<smbaResourceId>` saved in step 3.
+In Microsoft Graph Explorer, submit the following request. Replace `<principalObjectId>` with the value saved in step 1 and the `<smbaResourceId>` saved in step 2.
 
 ```http
 POST https://graph.microsoft.com/v1.0/oauth2PermissionGrants
@@ -96,21 +76,20 @@ Content-Type: application/json
 
 This should give `200 OK`, we dont have to save anything from the response here.
 
-## 5. Create an Agent Identity
-
-### Option A: Microsoft Entra Admin Center
+## 4. Create an Agent Identity
 
 1. Open [Agent Identities in the Microsoft Entra admin center](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/AllAgents.MenuView/~/allAgentIds).
-2. Create an agent identity.
-3. Select the agent blueprint from step 1
+2. Click Create an agent identity.
+3. On the next page, select the agent blueprint from step 1
+4. Once the identity is created click `Go to agent identity` this should load the agent identity details page.
 
-Save the `object-id` returned for the new agent identity. this will be reffered to as `<agentIdentityObjectId>` in the next step.
+Save the `object-id` returned for the new agent identity. this will be referred to as `<agentIdentityObjectId>` in the next step.
 
-## 6. Assign the SMBA Permission to the Agent Identity
+## 5. Assign the SMBA Permission to the Agent Identity
 
 The caller needs the `DelegatedPermissionGrant.ReadWrite.All` permission.
 
-In Microsoft Graph Explorer, submit the following request. Replace `<agentIdentityObjectId>` with the value saved in step 3; leave the other values unchanged.
+In Microsoft Graph Explorer, submit the following request. Replace `<agentIdentityObjectId>` with the value saved in step 4 and the `<smbaResourceId>` saved in step 2.
 
 ```http
 POST https://graph.microsoft.com/v1.0/oauth2PermissionGrants
@@ -121,13 +100,11 @@ Content-Type: application/json
 {
   "clientId": "<agentIdentityObjectId>",
   "consentType": "AllPrincipals",
-  "id": "8jJE7cV0qUGWNscC4cKioagfINH8oytAkUfEcUyZSTA",
-  "principalId": null,
-  "resourceId": "d1201fa8-a3fc-402b-9147-c4714c994930",
+  "resourceId": "<smbaResourceId>",
   "scope": "AgentData.ReadWrite"
 }
 ```
-
+This should give `200 OK`, we dont have to save anything from the response here.
 
 ## 6. Create an Agentic User
 
