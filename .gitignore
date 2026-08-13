@@ -18,3 +18,4 @@ devTools/
 
 .token
 appsettings.json
+!4-csharp-teams-sdk-capabilities/appsettings.json
