@@ -60,8 +60,9 @@ For testing, you'll need to expose the server to the internet so that Microsoft 
 In the Microsoft 365 Developer Portal, configure the endpoint.
 
 Open the following URL in your browser: `https://dev.teams.microsoft.com/tools/agent-blueprint/<id>`
-
 `<id>` is the agent blueprint appid created while setting up the blueprint
+
+Or you cam goto `https://dev.teams.microsoft.com/tools/agent-blueprint` which should list all your blueprints, select the required one.
 
 In developer Portal > goto Configuration > Notification Configuration
 - Set `Agent Type` as `API Based`
