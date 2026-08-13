@@ -21,7 +21,7 @@ An agentic user is backed by an agent identity, which is backed by an agent blue
 ## 1. Create an Agent Blueprint
 
 1. Open [Agent Blueprints in the Microsoft Entra admin center](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/AllAgents.MenuView/~/overview). Goto `Agent blueprints`
-2. Create an agent blueprint by giving its name, once created click `Go to blueprint`, this will load the blueprint details.
+2. Create an agent blueprint by giving its name, once created click `Go to blueprint` this will load the blueprint details.
 3. Save the following values for later:
    - Agent Blueprint `appId`
    - Agent Blueprint `principalObjectId`
