@@ -154,7 +154,7 @@ Content-Type: application/json
 }
 ```
 
-## 7. Verify the Agentic User in Teams
+## 8. Verify the Agentic User in Teams
 
 1. Open Microsoft Teams and locate the newly created agentic user. For the first time you may need to enter the full email e.g. `pheonix@dptest07.onmicrosoft.com`.
 2. Send a test message to the agentic user to verify the setup works.
