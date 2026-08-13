@@ -15,7 +15,7 @@ internal sealed class HelloWorldAgentOrchestrator : IAgentOrchestrator
         string text = activity.Text ?? string.Empty;
 
         string response =
-            $"User `{fromId}` sent a message to agentic user `{agenticUserId}`,with the following content: `{text}`";
+            $"User `{fromId}` sent a message to agentic user `{agenticUserId}` with the following content: `{text}`";
 
         foreach (string word in response.Split(' '))
         {
