@@ -18,7 +18,7 @@ An agentic user is backed by an agent identity, which is backed by an agent blue
 - An available Microsoft 365 E3 (or Teams) license
 
 
-## 1. Create an Agent Blueprint
+## Create an Agent Blueprint
 
 1. Open [Agent Blueprints in the Microsoft Entra admin center](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/AllAgents.MenuView/~/overview). Goto `Agent blueprints`
 2. Create an agent blueprint by giving its name, once created click `Go to blueprint` this will load the blueprint details.
@@ -43,6 +43,35 @@ From this step, you should have the following values saved for later use:
 - Agent Blueprint `clientSecret`
 - Tenant Id `tenantId`
 
+## Set inheritable permission for agent blueprint
+The caller needs `AgentIdentityBlueprint.ReadWrite.All` permission.
+
+In Microsoft Graph Explorer, submit the following request with the agent blueprint `<appId>` saved in step 1.
+
+```http
+POST https://graph.microsoft.com/v1.0/applications/{appId}/microsoft.graph.agentIdentityBlueprint/inheritablePermissions
+```
+
+```json
+{
+  "resourceAppId": "00000003-0000-0000-c000-000000000000",
+  "inheritableScopes": {
+    "@odata.type": "microsoft.graph.allAllowedScopes"
+  }
+}
+```
+
+
+## Get the Graph Api resource id
+
+The caller needs the `Application.Read.All` permission.
+
+In Microsoft Graph Explorer, submit the following request as is.
+
+```http
+GET https://graph.microsoft.com/v1.0/servicePrincipals(appId='00000003-0000-0000-c000-000000000000')?$select=id,displayName
+```
+This should return the `id` for Microsoft Graph, save this id, this will be referred as `graphResourceId` and will be used later.
 
 ## 2. Assign the SMBA Permission to the Agent Blueprint
 
