@@ -18,8 +18,6 @@ An agentic user is backed by an agent identity, which is backed by an agent blue
 - An available Microsoft 365 E3 (or Teams) license
 
 
-Note: The steps below use Microsoft Graph Explorer to create the agentic user. If this is your first time using Graph Explorer, please refer to the [Graph Explorer Troubleshooting](graphExplorerHelp/Readme.md) guide for help signing in and granting permissions.
-
 ## 1. Create an Agent Blueprint
 
 1. Open [Agent Blueprints in the Microsoft Entra admin center](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/AllAgents.MenuView/~/allAgentBlueprints).
@@ -48,6 +46,8 @@ From this step, you should have the following values saved for later use:
 ## 2. Get the SMBA resource id
 
 The caller needs the `Application.Read.All` permission.
+
+(If you are using Graph Explorer for the first time, please refer to the [Graph Explorer Troubleshooting](graphExplorerHelp/Readme.md) guide for help signing in and granting permissions.)
 
 In Microsoft Graph Explorer, submit the following request as is.
 
