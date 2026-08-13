@@ -165,4 +165,4 @@ Note: For the message to actually reach your server and for your server to respo
 
 This step will be done once a sample is up and running on local machine and is tunned to internet via ngrok (or any other tunnelling software). Follow the sample's readme to set up the sample and configure the endpoint in the developer portal.
 
-As next steps, set the [1 - C# Hello world](./1-csharp-hello-world/Readme.md) the saetup guide contains instructions on how to configure the endpoint in the developer portal for the agent blueprint. Once that is done, you can send a message to the agentic user and verify that your server receives it and responds back.
+As next steps, set up the sample [1 - C# Hello world](./1-csharp-hello-world/Readme.md) The setup guide contains instructions on how to configure the endpoint in the developer portal for the agent blueprint. Once that is done, you can send a message to the agentic user and verify that your server receives it and responds back.
