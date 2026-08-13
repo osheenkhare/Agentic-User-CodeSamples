@@ -108,7 +108,7 @@ This should give `201 Success`, we dont have to save anything from the response 
 
 ## 6. Create an Agentic User
 
-The caller needs `AgentIdUser.ReadWrite.IdentityParentedBy` permission.
+The caller needs `AgentIdUser.ReadWrite.All` permission.
 
 In Microsoft Graph Explorer, submit the following request. Replace the example values as needed and set `agentIdentityObjectId` to the agent identity object ID saved in step 4.
 
