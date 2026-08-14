@@ -49,7 +49,7 @@ The caller needs the `Application.Read.All` permission.
 
 (If you are using Graph Explorer for the first time, please refer to the [Graph Explorer Troubleshooting](graphExplorerHelp/Readme.md) guide for help signing in and granting permissions.)
 
-In Microsoft Graph Explorer, submit the following request as is.
+In Microsoft Graph Explorer, submit the following request **as is**, do not change the id in the URL.
 
 ```http
 GET https://graph.microsoft.com/v1.0/servicePrincipals(appId='5a807f24-c9de-44ee-a3a7-329e88a00ffc')?$select=id,displayName
