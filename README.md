@@ -7,7 +7,7 @@ These C# samples demonstrate agent identities with agent's user accounts in Micr
 1. Complete the [Agent's User Account Setup](./Agentic-User-Setup.md) to create an agent identity blueprint and agent identity, provision the agent's user account, and configure the messaging endpoint.
 2. Choose and configure one of the samples below. Start with [C# Hello World](./1-csharp-hello-world/Readme.md) for the simplest end-to-end example.
 
-The samples require the .NET 8 SDK. Individual samples document their additional service and configuration requirements.
+The samples require the .NET 10 SDK. Individual samples document their additional service and configuration requirements.
 
 ## Samples
 
