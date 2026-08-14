@@ -124,7 +124,7 @@ Content-Type: application/json
   "accountEnabled": true,
   "displayName": "Pheonix",
   "mailNickname": "Pheonix",
-  "userPrincipalName": "Pheonix@dptest07.onmicrosoft.com",
+  "userPrincipalName": "Pheonix@contoso.com",
   "identityParentId": "<agentIdentityObjectId>",
   "usageLocation": "US"
 }
@@ -158,7 +158,7 @@ Content-Type: application/json
 
 ## 8. Verify the Agentic User in Teams
 
-1. Open Microsoft Teams and locate the newly created agentic user. For the first time you may need to enter the full email e.g. `pheonix@dptest07.onmicrosoft.com`.
+1. Open Microsoft Teams and locate the newly created agentic user. For the first time you may need to enter the full email e.g. `pheonix@contoso.com`.
 2. Send a test message to the agentic user to verify the setup works.
 
 Note: For the message to actually reach your server and for your server to respond back, the server endpoint needs to be configured for this agent blueprint on the Developer Portal.
