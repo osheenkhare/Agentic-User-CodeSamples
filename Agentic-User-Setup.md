@@ -13,7 +13,7 @@ An agentic user is backed by an agent identity, which is backed by an agent blue
 
 - Access to the [Microsoft Entra admin center](https://entra.microsoft.com/)
 - Access to the [Microsoft Teams Developer Portal](https://dev.teams.microsoft.com/)
-- Access to [Microsoft Graph Explorer](https://developer.microsoft.com/graph/graph-explorer)
+- Access to [Microsoft Graph Explorer](https://developer.microsoft.com/graph/graph-explorer) If you are using Graph Explorer for the first time, please refer to the [Graph Explorer Troubleshooting](graphExplorerHelp/Readme.md) guide for help signing in and granting permissions.
 - Permissions to create agent identities, users, and OAuth permission grants
 - An available Microsoft 365 E3 (or Teams) license
 
@@ -45,9 +45,7 @@ From this step, you should have the following values saved for later use:
 
 ## 2. Get the SMBA resource id
 
-The caller needs the `Application.Read.All` permission.
-
-(If you are using Graph Explorer for the first time, please refer to the [Graph Explorer Troubleshooting](graphExplorerHelp/Readme.md) guide for help signing in and granting permissions.)
+The caller needs the `Application.Read.All` permission. (See [this guide](graphExplorerHelp/Readme.md#modify-permissions) on granting permissions in graph explorer.)
 
 In Microsoft Graph Explorer, submit the following request **as is**, do not change the id in the URL.
 
