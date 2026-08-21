@@ -17,6 +17,8 @@ WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 string azureOpenAiEndpoint = RequireConfiguration(builder.Configuration, "AzureOpenAI:Endpoint");
 string azureOpenAiApiKey = RequireConfiguration(builder.Configuration, "AzureOpenAI:ApiKey");
 string azureOpenAiDeployment = RequireConfiguration(builder.Configuration, "AzureOpenAI:Deployment");
+string tenantId = RequireConfiguration(builder.Configuration, "AzureAd:TenantId");
+string agentAppId = RequireConfiguration(builder.Configuration, "AzureAd:ClientId");
 string githubToken = RequireConfiguration(builder.Configuration, "GitHub:Token");
 string githubDefaultRepository =
     builder.Configuration["GitHub:DefaultRepository"] ?? "microsoft/teams.net";
@@ -30,6 +32,9 @@ builder.Services.AddSingleton<IChatClient>(_ =>
         .AsIChatClient());
 builder.Services.AddSingleton<ConversationAgent>();
 builder.Services.AddSingleton<ActionItemStore>();
+builder.Services.AddSingleton<ConversationScopeResolver>();
+builder.Services.AddSingleton<ScopedMemoryStore>();
+builder.Services.AddSingleton<MemoryActionScopeStore>();
 builder.Services.AddHttpClient<GitHubActionsService>();
 builder.Services.AddSingleton(serviceProvider =>
     new GitHubActionsService(
@@ -43,6 +48,12 @@ WebApplication app = builder.Build();
 TeamsBotApplication teams = app.UseTeamsBotApplication();
 ConversationAgent conversationAgent = app.Services.GetRequiredService<ConversationAgent>();
 ActionItemStore actionItems = app.Services.GetRequiredService<ActionItemStore>();
+ConversationScopeResolver memoryScopeResolver =
+    app.Services.GetRequiredService<ConversationScopeResolver>();
+ScopedMemoryStore scopedMemories =
+    app.Services.GetRequiredService<ScopedMemoryStore>();
+MemoryActionScopeStore memoryActionScopes =
+    app.Services.GetRequiredService<MemoryActionScopeStore>();
 GitHubActionsService githubActions = app.Services.GetRequiredService<GitHubActionsService>();
 BackgroundTaskQueue backgroundTasks = app.Services.GetRequiredService<BackgroundTaskQueue>();
 
@@ -64,13 +75,108 @@ teams.OnMessage(async (context, cancellationToken) =>
         context.Activity.TextWithoutMentions
         ?? context.Activity.Text
         ?? string.Empty);
+    string activityId = context.Activity.Id
+        ?? throw new InvalidOperationException("Incoming message has no activity ID.");
+    string requesterId = context.Activity.From?.Id
+        ?? throw new InvalidOperationException("Incoming message has no sender ID.");
+    ConversationMemoryScope memoryScope;
+    try
+    {
+        memoryScope = ResolveMemoryScope(
+            memoryScopeResolver,
+            tenantId,
+            agentAppId,
+            conversationType,
+            conversationId,
+            requesterId,
+            context.Activity.Recipient?.Id,
+            context.Activity.ChannelData?.TeamsTeamId
+                ?? context.Activity.ChannelData?.Team?.Id,
+            context.Activity.ChannelData?.TeamsChannelId
+                ?? context.Activity.ChannelData?.Channel?.Id,
+            context.Activity.ReplyToId,
+            activityId);
+    }
+    catch (ArgumentException exception)
+    {
+        await SendInCurrentContextAsync(
+            $"I could not establish a safe memory boundary: {exception.Message}");
+        return;
+    }
 
     if (userText.Equals("/reset", StringComparison.OrdinalIgnoreCase))
     {
         conversationAgent.Reset(conversationId);
         actionItems.Clear(conversationId);
-        await SendInCurrentContextAsync("Session memory and saved action items cleared.");
+        int removed = scopedMemories.Clear(memoryScope);
+        await SendInCurrentContextAsync(
+            $"Session memory and saved action items cleared. Removed {removed} explicit item(s) from {memoryScope.Label} only.");
         return;
+    }
+
+    if (userText.Equals("/memory-demo", StringComparison.OrdinalIgnoreCase))
+    {
+        await SendActivityInCurrentContextAsync(
+            MemoryCards.CreateIntroMessage(
+                memoryActionScopes.Create(
+                    memoryScope,
+                    requesterId,
+                    conversationId).Id));
+        return;
+    }
+
+    if (userText.Equals("/memory", StringComparison.OrdinalIgnoreCase))
+    {
+        await SendActivityInCurrentContextAsync(
+            MemoryCards.CreateStatusMessage(
+                memoryScope,
+                scopedMemories.Get(memoryScope)));
+        return;
+    }
+
+    if (userText.Equals("/forget", StringComparison.OrdinalIgnoreCase))
+    {
+        await SendActivityInCurrentContextAsync(
+            MemoryCards.CreateForgetConfirmationMessage(
+                memoryScope,
+                scopedMemories.Get(memoryScope).Count,
+                memoryActionScopes.Create(
+                    memoryScope,
+                    requesterId,
+                    conversationId).Id));
+        return;
+    }
+
+    Match remember = Regex.Match(
+        userText,
+        @"^\s*(?:please\s+)?remember(?:\s+that)?\s+(?<fact>.+?)\s*[.!]?\s*$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    if (remember.Success)
+    {
+        try
+        {
+            MemoryFact fact = scopedMemories.Add(
+                memoryScope,
+                remember.Groups["fact"].Value);
+            await SendActivityInCurrentContextAsync(
+                MemoryCards.CreateSavedMessage(memoryScope, fact));
+        }
+        catch (ArgumentException exception)
+        {
+            await SendInCurrentContextAsync(exception.Message);
+        }
+        return;
+    }
+
+    if (IsScopedMemoryRecallRequest(userText))
+    {
+        IReadOnlyList<MemoryFact> facts = scopedMemories.Get(memoryScope);
+        if (facts.Count > 0)
+        {
+            await SendInCurrentContextAsync(
+                CreateScopedMemoryRecallResponse(memoryScope, facts));
+            return;
+        }
     }
 
     if (userText.Equals("/actions", StringComparison.OrdinalIgnoreCase))
@@ -115,8 +221,6 @@ teams.OnMessage(async (context, cancellationToken) =>
         return;
     }
 
-    string activityId = context.Activity.Id
-        ?? throw new InvalidOperationException("Incoming message has no activity ID.");
     AgenticIdentity? agenticIdentity = context.Activity.Recipient?.GetAgenticIdentity();
     await TryAddReactionAsync("holdon");
     string completionReaction = "2705_whiteheavycheckmark";
@@ -359,6 +463,58 @@ teams.OnAdaptiveCardAction(async (context, cancellationToken) =>
     }
 
     string? action = GetCardValue(data, "action");
+    if (action is "memory_demo_save"
+        or "memory_demo_inspect"
+        or "memory_forget_confirm"
+        or "memory_forget_cancel")
+    {
+        string requesterId = context.Activity.From?.Id ?? string.Empty;
+        string memoryConversationId =
+            context.Activity.Conversation?.Id ?? string.Empty;
+        string? memoryActionScopeId =
+            GetCardValue(data, "memoryActionScopeId");
+        if (string.IsNullOrWhiteSpace(memoryActionScopeId)
+            || !memoryActionScopes.TryConsume(
+                memoryActionScopeId,
+                requesterId,
+                memoryConversationId,
+                out ConversationMemoryScope? memoryScope)
+            || memoryScope is null)
+        {
+            return AdaptiveCardResponse.CreateMessageResponse(
+                "This memory card is expired, already used, belongs to another user, or came from another conversation.",
+                200);
+        }
+
+        if (action == "memory_demo_save")
+        {
+            MemoryFact fact = scopedMemories.Add(
+                memoryScope,
+                "my project codename is Bluebird");
+            return AdaptiveCardResponse.CreateCardResponse(
+                MemoryCards.CreateSavedCard(memoryScope, fact));
+        }
+
+        if (action == "memory_demo_inspect")
+        {
+            return AdaptiveCardResponse.CreateCardResponse(
+                MemoryCards.CreateStatusCard(
+                    memoryScope,
+                    scopedMemories.Get(memoryScope)));
+        }
+
+        if (action == "memory_forget_confirm")
+        {
+            int removed = scopedMemories.Clear(memoryScope);
+            conversationAgent.Reset(memoryConversationId);
+            return AdaptiveCardResponse.CreateCardResponse(
+                MemoryCards.CreateClearedCard(memoryScope, removed));
+        }
+
+        return AdaptiveCardResponse.CreateCardResponse(
+            MemoryCards.CreateCancelledCard(memoryScope));
+    }
+
     if (!string.Equals(action, "analyze_github_actions", StringComparison.Ordinal))
     {
         return AdaptiveCardResponse.CreateMessageResponse("Unknown action.", 400);
@@ -469,6 +625,82 @@ static bool IsGitHubActionsRequest(string text) =>
     text.Equals("/github", StringComparison.OrdinalIgnoreCase)
     || text.Contains("github actions", StringComparison.OrdinalIgnoreCase)
     || text.Contains("workflow runs", StringComparison.OrdinalIgnoreCase);
+
+static bool IsScopedMemoryRecallRequest(string text) =>
+    Regex.IsMatch(
+        text,
+        @"\b(?:what|which|recall|remember)\b.{0,80}\b(?:code\s*name|codename|stored\s+memory|shared\s+release\s+window)\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+static string CreateScopedMemoryRecallResponse(
+    ConversationMemoryScope scope,
+    IReadOnlyList<MemoryFact> facts) =>
+    $"""
+    In the active {scope.Label} memory scope (Scope ID: {scope.DisplayId}), I have:
+
+    {string.Join(Environment.NewLine, facts.Select((fact, index) => $"{index + 1}. {fact.Text}"))}
+    """;
+
+static ConversationMemoryScope ResolveMemoryScope(
+    ConversationScopeResolver resolver,
+    string tenantId,
+    string configuredAgentId,
+    string conversationType,
+    string conversationId,
+    string userId,
+    string? activityAgentId,
+    string? teamId,
+    string? channelId,
+    string? replyToId,
+    string activityId)
+{
+    bool isChannel = conversationType.Equals(
+        "channel",
+        StringComparison.OrdinalIgnoreCase);
+    return resolver.Resolve(new ConversationScopeInput(
+        tenantId,
+        conversationType,
+        conversationId,
+        userId,
+        activityAgentId ?? configuredAgentId,
+        teamId,
+        isChannel ? GetChannelId(conversationId, channelId) : null,
+        isChannel
+            ? GetChannelRootMessageId(conversationId, replyToId, activityId)
+            : null));
+}
+
+static string? GetChannelId(string conversationId, string? channelId)
+{
+    if (!string.IsNullOrWhiteSpace(channelId))
+    {
+        return channelId;
+    }
+
+    int messageSuffix = conversationId.IndexOf(
+        ";messageid=",
+        StringComparison.OrdinalIgnoreCase);
+    string candidate = messageSuffix >= 0
+        ? conversationId[..messageSuffix]
+        : conversationId;
+    return !string.IsNullOrWhiteSpace(candidate) ? candidate : null;
+}
+
+static string GetChannelRootMessageId(
+    string conversationId,
+    string? replyToId,
+    string activityId)
+{
+    Match root = Regex.Match(
+        conversationId,
+        @"(?:^|;)messageid=(?<messageId>[^;]+)",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    return root.Success
+        ? Uri.UnescapeDataString(root.Groups["messageId"].Value)
+        : !string.IsNullOrWhiteSpace(replyToId)
+            ? replyToId
+            : activityId;
+}
 
 static MessageActivity CreateGitHubClarificationCard(string defaultRepository)
 {

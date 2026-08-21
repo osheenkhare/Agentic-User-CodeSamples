@@ -7,8 +7,12 @@ This sample is a software delivery assistant that demonstrates a complete Micros
 | Capability | Demonstration |
 | --- | --- |
 | Azure OpenAI | Streams model output in personal chats |
-| Conversation memory | Keeps the latest 12 user/assistant messages per Teams conversation |
-| Session controls | `/reset` clears memory and saved action items; `/actions` lists saved items |
+| Conversation memory | Keeps the latest 12 user/assistant messages within the active conversation boundary |
+| Natural memory isolation | Keeps ordinary 1:1 history out of group chats, channels, and other channel threads |
+| Explicit scoped memory | Separates private, group-chat, and channel-thread facts with bounded retention |
+| Memory diagnostics | `/memory-demo` and `/memory` show the active scope without enumerating another scope |
+| Scoped forgetting | `/forget` clears only the active scope after confirmation |
+| Session controls | `/reset` clears current-scope memory and saved action items; `/actions` lists saved items |
 | Reactions | Adds processing and completion reactions and handles user reaction triggers |
 | AI response UX | Adds AI-generated metadata, feedback controls, citations, and suggested prompts |
 | Adaptive Cards | `/github` opens a GitHub Actions analysis form |
@@ -54,6 +58,17 @@ Open `appsettings.json` and replace only the blank or placeholder values:
 
 ASP.NET Core configuration overrides remain available. For example, user secrets or environment variables such as `AzureOpenAI__ApiKey` can replace local JSON values without changing code.
 
+The optional `Memory` section controls the explicit demo store:
+
+```json
+{
+  "Memory": {
+    "LifetimeMinutes": 60,
+    "MaximumItemsPerScope": 20
+  }
+}
+```
+
 Do not commit populated credentials.
 
 ## Run locally
@@ -75,14 +90,18 @@ Configure the agent blueprint notification URL with the public HTTPS `/api/messa
 ## End-to-end demo
 
 1. In a personal chat, ask: `Create a safe rollout plan for a new API version.` Observe the processing reaction, informative update, streamed response, completion reaction, feedback controls, and suggested prompts.
-2. Ask a follow-up question to demonstrate conversation-scoped memory.
-3. Send `/reset`, then ask what was discussed to confirm the memory boundary was cleared.
-4. Send `/github`. Keep `microsoft/teams.net` or enter another accessible `owner/repository`, select filters, and choose **Analyze**.
-5. Continue chatting while analysis runs. The background worker proactively posts a completion notification.
-6. Send `show latest GitHub Actions analysis` to receive a cited report with links to the inspected workflow runs.
-7. React to an agent response with 👍, ✅, 📌, or ❗ and observe the immediate 👀 acknowledgement and follow-up behavior.
-8. Send `/actions` to review items saved by 📌. Send `/reset` to clear them.
-9. Add the agent to a channel and ask a question. The response is posted as a threaded channel reply.
+2. In the same 1:1, say `My project codename is Bluebird. Keep that in mind.`, then ask for the codename.
+3. Ask for the codename in a channel. The private 1:1 history is not supplied to that request.
+4. Send `/memory-demo` for optional scope diagnostics. Save the Bluebird demo fact, inspect `/memory`, and use `/forget` to clear only that scope.
+5. In one channel thread, remember a shared release window. Ask in another thread to demonstrate thread isolation.
+6. Send `/reset`, then ask what was discussed to confirm the current memory boundary was cleared.
+7. Send `/github`. Keep `microsoft/teams.net` or enter another accessible `owner/repository`, select filters, and choose **Analyze**.
+8. Continue chatting while analysis runs. The background worker proactively posts a completion notification.
+9. Send `show latest GitHub Actions analysis` to receive a cited report with links to the inspected workflow runs.
+10. React to an agent response with 👍, ✅, 📌, or ❗ and observe the immediate 👀 acknowledgement and follow-up behavior.
+11. Send `/actions` to review items saved by 📌.
+
+For a presenter-ready walkthrough, see [DEMO-SCRIPT.md](./DEMO-SCRIPT.md).
 
 ## Reaction mapping
 
@@ -98,7 +117,7 @@ The sample accepts both Teams SDK reaction aliases and raw catalog reaction IDs.
 
 ## Architecture and state
 
-`Program.cs` registers Teams event handlers for messages, reactions, Adaptive Card actions, and feedback submissions. `ConversationAgent` serializes model turns per conversation and retains a bounded history. `GitHubActionsService` reads workflow runs and jobs, caches the latest completed report per conversation, and supplies citation data. `BackgroundTaskQueue` runs card-triggered analysis after the invoke request completes. `ActionItemStore` keeps reaction-generated items per conversation.
+`Program.cs` registers Teams event handlers for messages, reactions, Adaptive Card actions, and feedback submissions. `ConversationAgent` serializes model turns per conversation and retains a bounded history. `ConversationScopeResolver` derives non-overlapping keys for personal, group-chat, and channel-thread memory before model invocation. `ScopedMemoryStore` applies TTL and item limits. `MemoryActionScopeStore` binds Adaptive Card actions to the original user, conversation, and resolved scope because invoke activities may not preserve the original conversation type. `GitHubActionsService` reads workflow runs and jobs, caches the latest completed report per conversation, and supplies citation data. `BackgroundTaskQueue` runs card-triggered analysis after the invoke request completes. `ActionItemStore` keeps reaction-generated items per conversation.
 
 Personal chats have an independent conversation memory. Participants in a group chat share that group's conversation memory. Each Teams channel thread has its own conversation identifier and therefore its own memory.
 
@@ -113,5 +132,7 @@ Visible threaded replies are channel-only. Teams personal and group chats use a 
 - Scope the GitHub token to read-only access for only the repositories required.
 - Validate repository authorization separately if users must not inspect every repository accessible to the configured token.
 - Replace in-memory history, reports, action items, and work queues with durable, tenant-aware services before scaling out.
+- Keep the same scope-key inputs and user/conversation binding if memory moves to durable storage.
+- Do not allow user input to select arbitrary memory keys or enumerate other scopes.
 - Add retry policies, telemetry, rate-limit handling, and operational alerting appropriate to the deployment.
 - Treat model output and external API data as untrusted content; keep human approval around destructive actions.

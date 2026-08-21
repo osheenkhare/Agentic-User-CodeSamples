@@ -18,6 +18,12 @@ internal sealed class ConversationAgent(IChatClient chatClient)
         when essential information is missing. Never claim to have inspected or changed a system
         unless a tool result proves it. Clearly identify destructive or production-impacting
         actions and require explicit confirmation before recommending execution.
+
+        Conversation history is isolated by the application before it reaches you. Use only the
+        history supplied in the current request. Never claim to remember, retrieve, or infer
+        information from another user, 1:1 chat, group chat, channel, or channel thread. If a
+        requested personal or conversational detail is absent, say it is not available in the
+        current conversation.
         """;
 
     // A Teams conversation ID is the memory boundary, so chats and channel threads do not share state.
