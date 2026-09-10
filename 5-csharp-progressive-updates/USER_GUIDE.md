@@ -50,7 +50,7 @@ List<WorkPlanStep> steps =
 Send the initial card and retain the activity ID:
 
 ```csharp
-SendActivityResponse? sent = await context.SendAsync(
+var sent = await context.SendAsync(
     WorkPlanCard.CreateMessage(steps),
     cancellationToken);
 ```
