@@ -14,6 +14,7 @@ There are two parts to setting up this sample
 - [2 - C# Graph Api](./2-csharp-graph-api/Readme.md)
 - [3 - C# Azure OpenAI](./3-csharp-azure-openai/Readme.md)
 - [4 - C# Teams SDK capabilities](./4-csharp-teams-sdk-capabilities/README.md)
+- [5 - C# Progressive updates](./5-csharp-progressive-updates/README.md)
 
 ## Demo video
 
