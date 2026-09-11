@@ -15,6 +15,7 @@ There are two parts to setting up this sample
 - [3 - C# Azure OpenAI](./3-csharp-azure-openai/Readme.md)
 - [4 - C# Teams SDK capabilities](./4-csharp-teams-sdk-capabilities/README.md)
 - [5 - C# Progressive updates](./5-csharp-progressive-updates/README.md)
+- [6 - PowerShell Agent Identity Blueprint permissions](./6-powershell-agent-blueprint-permissions/README.md)
 
 ## Demo video
 
